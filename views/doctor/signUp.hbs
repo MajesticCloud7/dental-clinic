@@ -1,0 +1,80 @@
+<style>
+    div form div.form-group {
+        padding: 5px;
+    }
+</style>
+
+<div id="box" class="col-md-6 offset-md-3">
+    <h3>Doctor Sign Up Form</h3>
+    {{#if error}}
+    <div class="alert alert-danger">{{error}}</div>
+    {{/if}}
+    <form action="/doctor/signUp" method="post" autocomplete="off">
+        <input type="hidden" name="_id">
+        <div class="form-group">
+            <label>First Name</label>
+            <input type="text" class="form-control" name="firstName" required="true" value="{{user.firstName}}">
+        </div>
+        <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" class="form-control" name="lastName" required="true" value="{{user.lastName}}">
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="text" class="form-control" name="email" required="true" value="{{user.email}}">
+        </div>
+        <div class="form-group">
+            <label>Specialty</label>
+            <select class="form-control" name="specialty" required="true">
+                <option value="ENDODONTICS"
+                {{#ifEquals user.specialty 'ENDODONTICS'}}
+                selected="true"
+                {{/ifEquals}}
+                >Endodontics</option>
+
+                <option value="ORTHODONTICS"
+                {{#ifEquals user.specialty 'ORTHODONTICS'}}
+                selected="true"
+                {{/ifEquals}}
+                >Orthodontics</option>
+
+                <option value="PROSTHODONTICS"
+                {{#ifEquals user.specialty 'PROSTHODONTICS'}}
+                selected="true"
+                {{/ifEquals}}
+                >Prosthodontics</option>
+
+                <option value="PERIODONTICS"
+                {{#ifEquals user.specialty 'PERIODONTICS'}}
+                selected="true"
+                {{/ifEquals}}
+                >Periodontics</option>
+
+                <option value="PEDIATRIC-DENTISTRY"
+                {{#ifEquals user.specialty 'PEDIATRIC-DENTISTRY'}}
+                selected="true"
+                {{/ifEquals}}
+                >Pediatric Dentistry</option>
+                
+                <option value="ORAL-SURGERY"
+                {{#ifEquals user.specialty 'ORAL-SURGERY'}}
+                selected="true"
+                {{/ifEquals}}
+                >Oral Surgery</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" class="form-control" name="password" required="true" value="{{user.password}}">
+        </div>
+        <div class="form-group">
+            <label>Repeat Password</label>
+            <input type="password" class="form-control" name="repeatedPassword" required="true"
+                value="{{user.repeatedPassword}}">
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-info">Submit</button>
+            <a class="btn btn-secondary" href="/">Cancel</a>
+        </div>
+    </form>
+</div>

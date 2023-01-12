@@ -27,6 +27,7 @@
             background: #0082e6;
             height: 80px;
             width: 100%;
+            padding-right: 70px;
         }
 
         label.logo {
@@ -105,7 +106,7 @@
 
             nav ul li {
                 display: block;
-                margin: 50px 0;
+                margin: 50px;
                 line-height: 30px;
             }
 
@@ -129,6 +130,22 @@
             background-size: cover;
             height: calc(100vh - 80px);
         }
+
+        ul li ul.dropdown li {
+            display: block;
+        }
+
+        ul li ul.dropdown {
+            width: 100%;
+            background: #0082e6;
+            position: absolute;
+            z-index: 999;
+            display: none;
+        }
+
+        ul li:hover ul.dropdown {
+            display: block;
+        }
     </style>
 </head>
 
@@ -141,9 +158,17 @@
         <label class="logo">Private Dental Clinic</label>
         <ul>
             <li><a href="#">Sign In</a></li>
-            <li><a href="#">Sign Up</a></li>
+            <li>
+                <a href="#">Sign Up</a>
+                <ul class="dropdown">
+                    <li><a href="/admin/signUp">As Admin</a></li>
+                    <li><a href="/doctor/signUp">As Doctor</a></li>
+                    <li><a href="/patient/signUp">As Patient</a></li>
+                </ul>
+            </li>
         </ul>
     </nav>
+    {{{body}}}
 </body>
 
 </html>

@@ -157,7 +157,9 @@
         </label>
         <label class="logo">Private Dental Clinic</label>
         <ul>
-            <li><a href="#">Schedule Appointment</a></li>
+            {{#if allowSchedule}}
+            <li><a href="/appointment/scheduleDate">Schedule Appointment</a></li>
+            {{/if}}
             <li><a href="/">Sign Out</a></li>
         </ul>
     </nav>

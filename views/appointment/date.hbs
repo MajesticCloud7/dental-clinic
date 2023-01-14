@@ -1,0 +1,40 @@
+<style>
+    div form div.form-group {
+        padding: 5px;
+    }
+</style>
+
+<div id="box" class="col-md-6 offset-md-3">
+    <h3>Schedule Appointment</h3>
+    {{#if error}}
+    <div class="alert alert-danger">{{error}}</div>
+    {{/if}}
+    <form action="/appointment/scheduleDate" method="post" autocomplete="off">
+        <div class="form-group">
+            <label>Doctor</label>
+            <select class="form-control" name="doctorId" required="true">
+                {{#each doctors}}
+                <option value="{{this._id}}">{{this.firstName}} {{this.lastName}} ({{this.specialty}})</option>
+                {{/each}}
+            </select>
+        </div>
+        {{#if admin}}
+        <div class="form-group">
+            <label>Patient</label>
+            <select class="form-control" name="patientId" required="true">
+                {{#each patients}}
+                <option value="{{this._id}}">{{this.firstName}} {{this.lastName}} ({{this.personalCode}})</option>
+                {{/each}}
+            </select>
+        </div>
+        {{/if}}
+        <div class="form-group">
+            <label>Date</label>
+            <input type="date" min={{minDate}} max={{maxDate}} class="form-control" name="date" required="true">
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-info">Submit</button>
+            <a class="btn btn-secondary" href="/">Cancel</a>
+        </div>
+    </form>
+</div>

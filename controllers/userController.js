@@ -9,10 +9,10 @@ router.get('/signIn', (req, res) => {
 router.post('/signIn', (req, res) => {
     var error = ''
 
-    User.findOne({ email: req.body.email }, (err, ActiveUser) => {
-        if (ActiveUser == undefined) {
+    User.findOne({ email: req.body.email }, (err, doc) => {
+        if (doc == undefined) {
             error = 'Entered email does not exist.'
-        } else if (ActiveUser.password != req.body.password) {
+        } else if (doc.password != req.body.password) {
             error = 'Entered password is incorrect.'
         }
 
@@ -22,8 +22,7 @@ router.post('/signIn', (req, res) => {
                 error: error
             })
         } else {
-            res.redirect('/main')
-            module.exports = { ActiveUser }
+            res.redirect('/' + doc.id)
         }
     })
 })

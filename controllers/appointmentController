@@ -1,0 +1,113 @@
+const express = require('express');
+var router = express.Router();
+const { Appointment } = require("../models/appointment.model");
+const { Doctor } = require("../models/doctor.model");
+const { Patient } = require("../models/patient.model");
+const { User } = require("../models/baseUser.model");
+
+var activeUser
+
+router.get("/:id", (req, res) => {
+    var allowSchedule = true
+    User.findById(req.params.id, (err, doc) => {
+        activeUser = doc
+
+        if (doc.user == "Doctor") {
+            allowSchedule = false
+        }
+        res.render('layouts/mainLayout', {
+            layout: false,
+            allowSchedule: allowSchedule
+        })
+    })
+})
+
+router.get('/appointment/scheduleDate', (req, res) => {
+    Doctor.find((err, doctors) => {
+        Patient.find((err, patients) => {
+            res.render('appointment/date', {
+                admin: activeUser.user == "Admin",
+                doctors: doctors,
+                patients: patients,
+                minDate: dateToString(addDays(1)),
+                maxDate: dateToString(addDays(30))
+            })
+        })
+    })
+})
+
+function addDays(days) {
+    var currentdate = new Date();
+    var result = new Date(currentdate);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
+function dateToString(date) {
+    var year = date.getFullYear()
+    var month = date.getMonth() + 1 < 10 ? ('0' + (date.getMonth() + 1)) : date.getMonth() + 1
+    var day = date.getDate() < 10 ? ('0' + date.getDate()) : date.getDate()
+
+    return year + '-' + month + '-' + day
+}
+
+router.post('/appointment/scheduleDate', (req, res) => {
+    var times = ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00"]
+
+    Appointment.find({ doctorId: req.body.doctorId }, (err, docs) => {
+        docs.forEach(doc => {
+            if (dateToString(doc.dateTime) == req.body.date) {
+                var hours = doc.dateTime.getHours()
+                var hourStr = hours < 10 ? ('0' + hours) : hours
+                var timeStr = hourStr + ':00'
+                var index = times.indexOf(timeStr)
+                if (index > -1) {
+                    times.splice(index, 1)
+                }
+            }
+        });
+        if (times.length > 0) {
+            res.render('appointment/time', {
+                doctorId: req.body.doctorId,
+                patientId: activeUser.user == "Admin" ? req.body.patientId : activeUser._id,
+                date: req.body.date,
+                times: times
+            })
+        } else {
+            Doctor.find((err, doctors) => {
+                Patient.find((err, patients) => {
+                    res.render('appointment/date', {
+                        doctors: doctors,
+                        patients: patients,
+                        minDate: dateToString(addDays(1)),
+                        maxDate: dateToString(addDays(30)),
+                        error: 'There are no free times on selected day.'
+                    })
+                })
+            })
+        }
+    })
+})
+
+router.post('/appointment/scheduleTime', (req, res) => {
+    insertRecord(req, res)
+})
+
+function insertRecord(req, res) {
+    var dateTime = new Date(req.body.date + 'T' + req.body.time);
+
+    var appointment = new Appointment();
+    appointment.dateTime = dateTime;
+    appointment.patientId = req.body.patientId;
+    appointment.doctorId = req.body.doctorId;
+
+    appointment.save((err, doc) => {
+        if (!err) {
+            res.redirect('/' + activeUser._id)
+        } else {
+            console.log('Error during insert: ' + err)
+        }
+    });
+}
+
+module.exports = router

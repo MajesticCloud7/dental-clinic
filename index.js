@@ -11,6 +11,7 @@ const adminController = require('./controllers/adminController')
 const doctorController = require('./controllers/doctorController')
 const patientController = require('./controllers/patientController')
 const userController = require('./controllers/userController')
+const appointmentController = require('./controllers/appointmentController')
 
 var app = express()
 
@@ -19,10 +20,6 @@ app.use(bodyparser.json())
 
 app.get("/", (req, res) => {
     res.render('layouts/indexLayout', { layout: false })
-})
-
-app.get("/main", (req, res) => {
-    res.render('layouts/mainLayout', { layout: false })
 })
 
 app.set('views', path.join(__dirname, '/views/'))
@@ -49,3 +46,4 @@ app.use('/admin', adminController)
 app.use('/doctor', doctorController)
 app.use('/patient', patientController)
 app.use('/user', userController)
+app.use('/', appointmentController)

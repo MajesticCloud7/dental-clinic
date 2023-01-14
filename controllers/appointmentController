@@ -7,7 +7,7 @@ const { User } = require("../models/baseUser.model");
 
 var activeUser
 
-router.get("/:id", (req, res) => {
+router.get("/main/:id", (req, res) => {
     var allowSchedule = true
     User.findById(req.params.id, (err, doc) => {
         activeUser = doc
@@ -22,10 +22,11 @@ router.get("/:id", (req, res) => {
     })
 })
 
-router.get('/appointment/scheduleDate', (req, res) => {
+router.get('/scheduleDate', (req, res) => {
     Doctor.find((err, doctors) => {
         Patient.find((err, patients) => {
             res.render('appointment/date', {
+                id: activeUser.id,
                 admin: activeUser.user == "Admin",
                 doctors: doctors,
                 patients: patients,
@@ -51,7 +52,7 @@ function dateToString(date) {
     return year + '-' + month + '-' + day
 }
 
-router.post('/appointment/scheduleDate', (req, res) => {
+router.post('/scheduleDate', (req, res) => {
     var times = ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00"]
 
     Appointment.find({ doctorId: req.body.doctorId }, (err, docs) => {
@@ -68,6 +69,7 @@ router.post('/appointment/scheduleDate', (req, res) => {
         });
         if (times.length > 0) {
             res.render('appointment/time', {
+                id: activeUser.id,
                 doctorId: req.body.doctorId,
                 patientId: activeUser.user == "Admin" ? req.body.patientId : activeUser._id,
                 date: req.body.date,
@@ -77,6 +79,7 @@ router.post('/appointment/scheduleDate', (req, res) => {
             Doctor.find((err, doctors) => {
                 Patient.find((err, patients) => {
                     res.render('appointment/date', {
+                        id: activeUser.id,
                         doctors: doctors,
                         patients: patients,
                         minDate: dateToString(addDays(1)),
@@ -89,7 +92,7 @@ router.post('/appointment/scheduleDate', (req, res) => {
     })
 })
 
-router.post('/appointment/scheduleTime', (req, res) => {
+router.post('/scheduleTime', (req, res) => {
     insertRecord(req, res)
 })
 
@@ -103,11 +106,95 @@ function insertRecord(req, res) {
 
     appointment.save((err, doc) => {
         if (!err) {
-            res.redirect('/' + activeUser._id)
+            res.redirect('/appointment/main/' + activeUser._id)
         } else {
             console.log('Error during insert: ' + err)
         }
     });
+}
+
+router.get('/view', (req, res) => {
+    if (activeUser.user == 'Admin') {
+        Appointment.find(async (err, docs) => {
+            res.render('appointment/view', {
+                id: activeUser.id,
+                list: await appointments(docs)
+            })
+        })
+    } else if (activeUser.user == 'Doctor') {
+        Appointment.find({ doctorId: activeUser.id }, async (err, docs) => {
+            res.render('appointment/view', {
+                id: activeUser.id,
+                list: await appointments(docs)
+            })
+        })
+    } else if (activeUser.user == 'Patient') {
+        Appointment.find({ patientId: activeUser.id }, async (err, docs) => {
+            res.render('appointment/view', {
+                id: activeUser.id,
+                list: await appointments(docs)
+            })
+        })
+    }
+})
+
+async function appointments(docs) {
+    var dates = appointmentDates(docs)
+    var times = appointmentTimes(docs)
+    var patients = await appointmentPatients(docs)
+    var doctors = await appointmentDoctors(docs)
+
+    var list = new Array(times.length)
+
+    for (let i = 0; i < times.length; i++) {
+        list[i] = [dates[i], times[i], patients[i], doctors[i]]
+    }
+
+    return list
+}
+
+function appointmentDates(docs) {
+    var list = new Array(docs.length)
+
+    for (let i = 0; i < docs.length; i++) {
+        list[i] = dateToString(docs[i].dateTime)
+    }
+
+    return list
+}
+
+function appointmentTimes(docs) {
+    var list = new Array(docs.length)
+
+    for (let i = 0; i < docs.length; i++) {
+        var hours = docs[i].dateTime.getHours()
+        var hourStr = hours < 10 ? ('0' + hours) : hours
+        list[i] = hourStr + ':00'
+    }
+
+    return list
+}
+
+async function appointmentPatients(docs) {
+    var list = new Array(docs.length)
+
+    for (let i = 0; i < docs.length; i++) {
+        var patient = await User.findOne({ _id: docs[i].patientId })
+        list[i] = patient._doc.firstName + ' ' + patient._doc.lastName + ' (' + patient._doc.personalCode + ')'
+    }
+
+    return list
+}
+
+async function appointmentDoctors(docs) {
+    var list = new Array(docs.length)
+
+    for (let i = 0; i < docs.length; i++) {
+        var doctor = await User.findOne({ _id: docs[i].doctorId })
+        list[i] = doctor._doc.firstName + ' ' + doctor._doc.lastName + ' (' + doctor._doc.specialty + ')'
+    }
+
+    return list
 }
 
 module.exports = router

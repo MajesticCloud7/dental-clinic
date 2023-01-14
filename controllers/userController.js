@@ -22,7 +22,7 @@ router.post('/signIn', (req, res) => {
                 error: error
             })
         } else {
-            res.redirect('/' + doc.id)
+            res.redirect('/appointment/main/' + doc.id)
         }
     })
 })

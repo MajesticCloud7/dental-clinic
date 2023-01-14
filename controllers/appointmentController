@@ -8,16 +8,11 @@ const { User } = require("../models/baseUser.model");
 var activeUser
 
 router.get("/main/:id", (req, res) => {
-    var allowSchedule = true
     User.findById(req.params.id, (err, doc) => {
         activeUser = doc
-
-        if (doc.user == "Doctor") {
-            allowSchedule = false
-        }
         res.render('layouts/mainLayout', {
             layout: false,
-            allowSchedule: allowSchedule
+            allowSchedule: activeUser.user != 'Doctor'
         })
     })
 })
@@ -31,7 +26,9 @@ router.get('/scheduleDate', (req, res) => {
                 doctors: doctors,
                 patients: patients,
                 minDate: dateToString(addDays(1)),
-                maxDate: dateToString(addDays(30))
+                maxDate: dateToString(addDays(30)),
+                layout: 'mainLayout',
+                allowSchedule: activeUser.user != 'Doctor'
             })
         })
     })
@@ -73,7 +70,9 @@ router.post('/scheduleDate', (req, res) => {
                 doctorId: req.body.doctorId,
                 patientId: activeUser.user == "Admin" ? req.body.patientId : activeUser._id,
                 date: req.body.date,
-                times: times
+                times: times,
+                layout: 'mainLayout',
+                allowSchedule: activeUser.user != 'Doctor'
             })
         } else {
             Doctor.find((err, doctors) => {
@@ -84,7 +83,9 @@ router.post('/scheduleDate', (req, res) => {
                         patients: patients,
                         minDate: dateToString(addDays(1)),
                         maxDate: dateToString(addDays(30)),
-                        error: 'There are no free times on selected day.'
+                        error: 'There are no free times on selected day.',
+                        layout: 'mainLayout',
+                        allowSchedule: activeUser.user != 'Doctor'
                     })
                 })
             })
@@ -118,21 +119,27 @@ router.get('/view', (req, res) => {
         Appointment.find(async (err, docs) => {
             res.render('appointment/view', {
                 id: activeUser.id,
-                list: await appointments(docs)
+                list: await appointments(docs),
+                layout: 'mainLayout',
+                allowSchedule: activeUser.user != 'Doctor'
             })
         })
     } else if (activeUser.user == 'Doctor') {
         Appointment.find({ doctorId: activeUser.id }, async (err, docs) => {
             res.render('appointment/view', {
                 id: activeUser.id,
-                list: await appointments(docs)
+                list: await appointments(docs),
+                layout: 'mainLayout',
+                allowSchedule: activeUser.user != 'Doctor'
             })
         })
     } else if (activeUser.user == 'Patient') {
         Appointment.find({ patientId: activeUser.id }, async (err, docs) => {
             res.render('appointment/view', {
                 id: activeUser.id,
-                list: await appointments(docs)
+                list: await appointments(docs),
+                layout: 'mainLayout',
+                allowSchedule: activeUser.user != 'Doctor'
             })
         })
     }
